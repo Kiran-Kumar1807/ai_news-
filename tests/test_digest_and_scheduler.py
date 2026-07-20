@@ -69,6 +69,16 @@ def test_scheduler_has_jobs():
     assert {"hourly_ingestion", "daily_digest"} <= job_ids
 
 
+def test_startup_ingestion_job_toggles_with_setting(monkeypatch):
+    monkeypatch.setattr(scheduler.settings, "ingest_on_startup", True)
+    sched = scheduler.create_scheduler()
+    assert "startup_ingestion" in {job.id for job in sched.get_jobs()}
+
+    monkeypatch.setattr(scheduler.settings, "ingest_on_startup", False)
+    sched2 = scheduler.create_scheduler()
+    assert "startup_ingestion" not in {job.id for job in sched2.get_jobs()}
+
+
 def test_start_and_shutdown_scheduler():
     from backend.scheduler_state import scheduler_status
 

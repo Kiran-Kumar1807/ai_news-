@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     # Ingestion / scheduler
     ingest_interval_minutes: int = 60
     enable_scheduler: bool = True
+    # Run one ingestion pass shortly after startup so a fresh deploy has content
+    # without waiting a full interval for the first scheduled run.
+    ingest_on_startup: bool = True
     max_articles_per_feed: int = 20
 
     # Digest email
