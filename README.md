@@ -152,7 +152,11 @@ ruff check .
 
 ## CI/CD (GitHub Actions)
 
-On every push / PR (`.github/workflows/ci.yml`):
+> The workflow lives at `docs/ci.yml` in this repo and must be moved to
+> `.github/workflows/ci.yml` with a workflow-scoped token to activate it
+> (see `docs/CI_CD.md`).
+
+On every push / PR:
 
 1. Install dependencies
 2. `ruff check` (lint)
