@@ -34,7 +34,9 @@ class Settings(BaseSettings):
 
     # Gemini
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
+    # gemini-flash-lite-latest is available on the Gemini free tier; set
+    # GEMINI_MODEL to a heavier model (e.g. gemini-2.5-pro) when on a paid plan.
+    gemini_model: str = "gemini-flash-lite-latest"
 
     # Ingestion / scheduler
     ingest_interval_minutes: int = 60

@@ -23,7 +23,7 @@ services:
       DATABASE_URL: postgresql+psycopg2://news:news@db:5432/news_aggregator
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-in-production}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-flash-lite-latest}
       ENABLE_SCHEDULER: ${ENABLE_SCHEDULER:-true}
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
