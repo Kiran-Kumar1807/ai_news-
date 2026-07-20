@@ -166,14 +166,43 @@ On every push / PR:
 
 ---
 
-## Deployment (free tier)
+## Deployment
+
+### One-click Render Blueprint (recommended)
+
+The repo ships a [`render.yaml`](render.yaml) Blueprint that provisions everything:
+a managed PostgreSQL database, the FastAPI backend (with the APScheduler jobs),
+and the Streamlit frontend.
+
+1. In the Render Dashboard: **New + → Blueprint**, and select this repo.
+2. Render creates `ai-news-db`, `ai-news-backend`, and `ai-news-frontend`.
+   `DATABASE_URL` is wired from the database and `JWT_SECRET_KEY` is
+   auto-generated.
+3. Set the `sync: false` secrets when prompted:
+   - Backend: `GEMINI_API_KEY` (and optional `SMTP_*`).
+   - After the first deploy, set the cross-service URLs:
+     - Backend `CORS_ORIGINS` → the frontend URL (e.g. `https://ai-news-frontend.onrender.com`).
+     - Frontend `API_BASE_URL` → the backend URL (e.g. `https://ai-news-backend.onrender.com`).
+   Then trigger a redeploy of both services.
+4. Add a UptimeRobot HTTP monitor on `<backend>/health` every 5 minutes. On the
+   free tier this also keeps the backend awake so the hourly ingestion job fires.
+
+The backend runs `alembic upgrade head` on boot and serves via
+`gunicorn` + Uvicorn workers. It uses a **single worker** so only one
+APScheduler instance runs (avoiding duplicate ingestion/digest jobs).
+
+> Free-tier notes: Render free web services sleep after inactivity — the
+> UptimeRobot ping keeps the backend warm. The free Postgres instance expires
+> after ~30 days. For real production traffic, use paid instances and move the
+> scheduler to a dedicated worker or Render Cron Job.
+
+### Alternatives
 
 | Component | Service              | Notes                                            |
 |-----------|----------------------|--------------------------------------------------|
-| Database  | Supabase PostgreSQL  | Copy the connection string into `DATABASE_URL`.  |
-| Backend   | Render (free web svc)| Build with `docker/Dockerfile.backend`; set env vars; start `alembic upgrade head && uvicorn backend.main:app --host 0.0.0.0 --port $PORT`. Add a Deploy Hook and store it as the `RENDER_DEPLOY_HOOK_URL` GitHub secret. |
-| Frontend  | Streamlit Cloud      | Point at `frontend/app.py`; set `API_BASE_URL` to the Render backend URL. |
-| Monitoring| UptimeRobot          | Ping `<backend>/health` every 5 minutes.         |
+| Database  | Supabase PostgreSQL  | Copy the connection string into `DATABASE_URL` (the app normalizes `postgres://` automatically). |
+| Frontend  | Streamlit Cloud      | Point at `frontend/app.py`; set `API_BASE_URL` to the backend URL. |
+| CI deploy | GitHub Actions       | Set the `RENDER_DEPLOY_HOOK_URL` secret to auto-trigger a Render deploy on `main`. |
 
 ### Environment variables
 

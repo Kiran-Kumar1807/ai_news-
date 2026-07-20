@@ -54,6 +54,32 @@ class Settings(BaseSettings):
     # Frontend
     api_base_url: str = "http://localhost:8000"
 
+    # CORS: comma-separated list of allowed origins, or "*" for any.
+    cors_origins: str = "*"
+
+    @property
+    def sqlalchemy_database_url(self) -> str:
+        """Return a SQLAlchemy-compatible database URL.
+
+        Managed Postgres providers (Render, Supabase, Heroku) hand out URLs with
+        the ``postgres://`` scheme, which SQLAlchemy 2 rejects. Normalize those
+        (and driverless ``postgresql://``) to the explicit ``psycopg2`` driver.
+        """
+        url = self.database_url
+        if url.startswith("postgres://"):
+            url = "postgresql+psycopg2://" + url[len("postgres://") :]
+        elif url.startswith("postgresql://"):
+            url = "postgresql+psycopg2://" + url[len("postgresql://") :]
+        return url
+
+    @property
+    def cors_allow_origins(self) -> list[str]:
+        """Parse ``cors_origins`` into a list of origins."""
+        raw = self.cors_origins.strip()
+        if raw in ("", "*"):
+            return ["*"]
+        return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
     @property
     def gemini_enabled(self) -> bool:
         return bool(self.gemini_api_key)

@@ -1,0 +1,75 @@
+# Render Blueprint for the AI-Powered Personalized News Aggregator.
+# Deploy: Render Dashboard -> New + -> Blueprint -> select this repo.
+# After the first deploy, set the cross-service URLs (see comments below).
+
+databases:
+  - name: ai-news-db
+    databaseName: news_aggregator
+    user: news
+    plan: free
+
+services:
+  # FastAPI backend (API + in-process APScheduler).
+  - type: web
+    name: ai-news-backend
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    # Single worker so only one APScheduler instance runs (no duplicate jobs).
+    startCommand: >-
+      alembic upgrade head &&
+      gunicorn backend.main:app
+      -k uvicorn.workers.UvicornWorker
+      --workers 1
+      --timeout 120
+      -b 0.0.0.0:$PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ai-news-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-flash-lite-latest
+      - key: ENABLE_SCHEDULER
+        value: "true"
+      - key: ENVIRONMENT
+        value: production
+      # Set to the frontend URL after its first deploy (e.g. https://ai-news-frontend.onrender.com)
+      - key: CORS_ORIGINS
+        sync: false
+      # Optional Gmail SMTP for the daily digest.
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+
+  # Streamlit frontend.
+  - type: web
+    name: ai-news-frontend
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: >-
+      streamlit run frontend/app.py
+      --server.port $PORT
+      --server.address 0.0.0.0
+      --server.headless true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      # Set to the backend URL after its first deploy (e.g. https://ai-news-backend.onrender.com)
+      - key: API_BASE_URL
+        sync: false
