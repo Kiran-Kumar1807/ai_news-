@@ -1,11 +1,20 @@
 """AI-powered article categorization with a deterministic fallback."""
 from __future__ import annotations
 
+import re
+from functools import cache
+
 from backend.core.categories import CATEGORIES, CATEGORY_KEYWORDS, DEFAULT_CATEGORY
 from backend.logging_config import get_logger
 from ingestion import gemini_client
 
 logger = get_logger("ai")
+
+
+@cache
+def _keyword_pattern(keyword: str) -> re.Pattern[str]:
+    """Compile a word-boundary regex for a keyword/phrase (case-insensitive)."""
+    return re.compile(rf"\b{re.escape(keyword)}\b", re.IGNORECASE)
 
 _PROMPT = (
     "You are a precise news classifier. Classify the following article into "
@@ -31,11 +40,21 @@ def _normalize(text: str) -> str | None:
 
 
 def classify_by_keywords(title: str, content: str) -> str:
-    """Heuristic keyword-based classification used when Gemini is unavailable."""
-    text = f"{title} {content}".lower()
+    """Heuristic keyword-based classification used when Gemini is unavailable.
+
+    Matches on whole words/phrases (via ``\\b`` boundaries) so short tokens like
+    "ai" do not spuriously match words such as "Argentina" or "captain". The
+    title is weighted more heavily than the body.
+    """
+    title_text = title or ""
+    body_text = content or ""
     scores: dict[str, int] = {}
     for category, keywords in CATEGORY_KEYWORDS.items():
-        score = sum(text.count(keyword) for keyword in keywords)
+        score = 0
+        for keyword in keywords:
+            pattern = _keyword_pattern(keyword)
+            score += 2 * len(pattern.findall(title_text))
+            score += len(pattern.findall(body_text))
         if score:
             scores[category] = score
     if not scores:

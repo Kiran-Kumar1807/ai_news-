@@ -11,7 +11,9 @@ from backend.models import User
 from backend.services.security import decode_access_token
 from backend.services.user_service import get_user_by_id
 
-_bearer = HTTPBearer(auto_error=True)
+# auto_error=False so a missing/invalid Authorization header yields our own
+# 401 (rather than the framework default 403).
+_bearer = HTTPBearer(auto_error=False)
 
 _credentials_error = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -21,10 +23,12 @@ _credentials_error = HTTPException(
 
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(_bearer),
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
     db: Session = Depends(get_db),
 ) -> User:
     """Resolve the authenticated user from a Bearer JWT."""
+    if credentials is None:
+        raise _credentials_error
     token = credentials.credentials
     try:
         payload = decode_access_token(token)

@@ -60,6 +60,6 @@ def test_login_with_wrong_password(client):
 
 
 def test_profile_requires_authentication(client):
-    assert client.get("/profile").status_code == 403  # missing bearer
+    assert client.get("/profile").status_code == 401  # missing bearer
     bad = client.get("/profile", headers={"Authorization": "Bearer not-a-token"})
     assert bad.status_code == 401
