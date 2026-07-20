@@ -1,8 +1,11 @@
 """APScheduler configuration wiring hourly ingestion and the daily digest."""
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from backend.config import settings
@@ -43,6 +46,19 @@ def create_scheduler() -> BackgroundScheduler:
         max_instances=1,
         coalesce=True,
     )
+    if settings.ingest_on_startup:
+        # One-shot run a few seconds after boot so a fresh deploy is populated
+        # without waiting a full interval for the first hourly run.
+        scheduler.add_job(
+            _hourly_job,
+            trigger=DateTrigger(
+                run_date=datetime.now(timezone.utc) + timedelta(seconds=15)
+            ),
+            id="startup_ingestion",
+            replace_existing=True,
+            max_instances=1,
+            coalesce=True,
+        )
     return scheduler
 
 
