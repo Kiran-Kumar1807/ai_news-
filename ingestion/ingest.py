@@ -29,13 +29,14 @@ def _process_one(db: Session, article: ExtractedArticle) -> bool:
         return False
 
     category = classifier.classify(article.title, article.content)
-    summary = summarizer.summarize(article.title, article.content)
+    bulletin, summary = summarizer.summarize_article(article.title, article.content)
 
     payload = ArticleCreate(
         title=article.title,
         source=article.source,
         article_url=article.article_url,
         content=article.content,
+        bulletin=bulletin,
         summary=summary,
         category=category,
         article_hash=article.article_hash,

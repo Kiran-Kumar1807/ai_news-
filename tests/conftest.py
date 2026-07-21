@@ -9,9 +9,11 @@ import os
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
 os.environ.setdefault("ENABLE_SCHEDULER", "false")
-# Force-disable Gemini so tests exercise the deterministic heuristic fallbacks
-# and never call the live API, even when a real key is present in the env.
+# Force-disable all LLM providers so tests exercise the deterministic heuristic
+# fallbacks and never call a live API, even when real keys are present in the env.
 os.environ["GEMINI_API_KEY"] = ""
+os.environ["GROQ_API_KEY"] = ""
+os.environ["OPENROUTER_API_KEY"] = ""
 os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key")
 
 import pytest  # noqa: E402

@@ -6,7 +6,7 @@ from functools import cache
 
 from backend.core.categories import CATEGORIES, CATEGORY_KEYWORDS, DEFAULT_CATEGORY
 from backend.logging_config import get_logger
-from ingestion import gemini_client
+from ingestion import llm
 
 logger = get_logger("ai")
 
@@ -73,7 +73,7 @@ def classify(title: str, content: str) -> str:
         title=title,
         content=(content or "")[:4000],
     )
-    raw = gemini_client.generate(prompt)
+    raw = llm.generate(prompt)
     if raw:
         normalized = _normalize(raw)
         if normalized:

@@ -42,6 +42,19 @@ class Settings(BaseSettings):
     # Retries on 429/rate-limit responses before falling back to heuristics.
     gemini_max_retries: int = 2
 
+    # Additional free-tier LLM providers (OpenAI-compatible chat APIs). The
+    # router tries providers in ``llm_provider_order`` and fails over to the next
+    # on rate-limit/error, so combined free quotas approximate seamless service.
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.1-8b-instant"
+    groq_max_rpm: int = 25
+    openrouter_api_key: str = ""
+    openrouter_model: str = "meta-llama/llama-3.1-8b-instruct:free"
+    openrouter_max_rpm: int = 15
+    # Comma-separated provider order; only providers with a key configured run.
+    llm_provider_order: str = "groq,gemini,openrouter"
+    llm_timeout_seconds: int = 30
+
     # Ingestion / scheduler
     ingest_interval_minutes: int = 60
     enable_scheduler: bool = True
@@ -94,6 +107,19 @@ class Settings(BaseSettings):
     @property
     def gemini_enabled(self) -> bool:
         return bool(self.gemini_api_key)
+
+    @property
+    def groq_enabled(self) -> bool:
+        return bool(self.groq_api_key)
+
+    @property
+    def openrouter_enabled(self) -> bool:
+        return bool(self.openrouter_api_key)
+
+    @property
+    def llm_enabled(self) -> bool:
+        """Whether any LLM provider is configured."""
+        return self.gemini_enabled or self.groq_enabled or self.openrouter_enabled
 
     @property
     def smtp_enabled(self) -> bool:

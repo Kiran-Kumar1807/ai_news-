@@ -123,6 +123,8 @@ def feed_view() -> None:
         with st.container(border=True):
             st.markdown(f"### {article['title']}")
             st.caption(f"{article['source']} · {article['category']}")
+            if article.get("bulletin"):
+                st.markdown(f"**{article['bulletin']}**")
             if article.get("summary"):
                 st.markdown(article["summary"])
             if st.button("View details", key=f"detail_{article['id']}"):
@@ -147,6 +149,8 @@ def article_view() -> None:
         f"{article['source']} · {article['category']} · "
         f"{article.get('published_at', 'unknown date')}"
     )
+    if article.get("bulletin"):
+        st.info(article["bulletin"])
     if article.get("summary"):
         st.subheader("Summary")
         st.markdown(article["summary"])

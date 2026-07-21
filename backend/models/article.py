@@ -23,6 +23,7 @@ class Article(Base):
     source: Mapped[str] = mapped_column(String(128), index=True, nullable=False)
     article_url: Mapped[str] = mapped_column(String(1024), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    bulletin: Mapped[str | None] = mapped_column(String(256), nullable=True)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     category: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
     article_hash: Mapped[str] = mapped_column(
