@@ -15,6 +15,7 @@ class ArticleSummary(BaseModel):
     title: str
     source: str
     article_url: str
+    bulletin: str | None = None
     summary: str | None = None
     category: str
     published_at: datetime | None = None
@@ -35,6 +36,7 @@ class ArticleCreate(BaseModel):
     source: str
     article_url: str
     content: str = ""
+    bulletin: str | None = None
     summary: str | None = None
     category: str
     article_hash: str

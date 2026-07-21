@@ -22,7 +22,7 @@ def test_health_endpoint(client):
     body = resp.json()
     assert body["status"] in ("ok", "degraded")
     names = {c["name"] for c in body["components"]}
-    assert {"database", "gemini", "scheduler"} <= names
+    assert {"database", "llm", "scheduler"} <= names
 
 
 def test_categories_endpoint(client):

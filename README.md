@@ -7,7 +7,7 @@ selected interests.
 
 - **Backend:** FastAPI + SQLAlchemy + Alembic (JWT auth, REST API)
 - **Frontend:** Streamlit (login, feed, article details, profile, analytics)
-- **AI:** Gemini for categorization + 3-bullet summaries (heuristic fallback when no key)
+- **AI:** multi-provider LLM router (Groq / Gemini / OpenRouter) for categorization, a one-line **TL;DR bulletin** + clean 3-bullet summaries; fails over between providers on rate-limit and falls back to heuristics when no key
 - **Ingestion:** `feedparser` RSS collection with SHA-256 deduplication
 - **Scheduler:** APScheduler — hourly ingestion + daily email digest (Gmail SMTP)
 - **Infra:** Docker Compose, GitHub Actions CI/CD, structured logging, health checks
@@ -80,8 +80,22 @@ export SMTP_USERNAME=you@gmail.com
 export SMTP_PASSWORD=your_gmail_app_password
 ```
 
-> Without `GEMINI_API_KEY`, categorization/summarization use deterministic
+> Without any LLM key, categorization/summarization use deterministic
 > heuristic fallbacks so the app is fully functional for development and testing.
+
+### Multiple free LLM providers (avoid rate limits)
+
+The app routes AI calls through several free-tier providers and switches to the
+next one the moment one is rate-limited, so combined quotas give near-seamless
+service. Enable any subset by setting their keys:
+
+```bash
+export GROQ_API_KEY=...        # https://console.groq.com/keys (fast, generous free tier)
+export OPENROUTER_API_KEY=...  # https://openrouter.ai/keys (free Llama models)
+export GEMINI_API_KEY=...      # https://aistudio.google.com/apikey
+# Order tried (only providers with a key run):
+export LLM_PROVIDER_ORDER=groq,gemini,openrouter
+```
 
 ---
 
@@ -130,7 +144,7 @@ python -m scheduler.daily_digest
 | GET    | `/articles/{id}`         | —    | Full article detail                |
 | GET    | `/articles/analytics`    | —    | Dashboard analytics                |
 | GET    | `/categories`            | —    | Supported categories               |
-| GET    | `/health`                | —    | DB / Gemini / scheduler status     |
+| GET    | `/health`                | —    | DB / LLM providers / scheduler     |
 
 ---
 

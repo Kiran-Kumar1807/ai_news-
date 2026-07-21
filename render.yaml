@@ -44,6 +44,13 @@ services:
         value: gemini-flash-lite-latest
       - key: GEMINI_MAX_RPM
         value: "12"
+      # Extra free-tier LLM providers; router fails over between them.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: LLM_PROVIDER_ORDER
+        value: groq,gemini,openrouter
       - key: ENABLE_SCHEDULER
         value: "true"
       - key: ENVIRONMENT

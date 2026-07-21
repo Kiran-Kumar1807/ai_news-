@@ -5,10 +5,11 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from backend.config import settings
 from backend.database.session import get_db
 from backend.scheduler_state import scheduler_status
 from backend.schemas.common import HealthComponent, HealthResponse
-from ingestion import gemini_client
+from ingestion import llm
 
 router = APIRouter(tags=["health"])
 
@@ -27,15 +28,30 @@ def health(db: Session = Depends(get_db)) -> HealthResponse:
             HealthComponent(name="database", status="error", detail=str(exc))
         )
 
-    # Gemini
-    if gemini_client.is_available():
-        components.append(HealthComponent(name="gemini", status="ok"))
+    # LLM providers (router)
+    providers = [
+        name
+        for name, enabled in (
+            ("groq", settings.groq_enabled),
+            ("gemini", settings.gemini_enabled),
+            ("openrouter", settings.openrouter_enabled),
+        )
+        if enabled
+    ]
+    if llm.is_available():
+        components.append(
+            HealthComponent(
+                name="llm",
+                status="ok",
+                detail="providers: " + ", ".join(providers),
+            )
+        )
     else:
         components.append(
             HealthComponent(
-                name="gemini",
+                name="llm",
                 status="disabled",
-                detail="No API key configured; using heuristic fallbacks.",
+                detail="No LLM provider configured; using heuristic fallbacks.",
             )
         )
 
