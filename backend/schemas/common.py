@@ -21,3 +21,9 @@ class HealthResponse(BaseModel):
 
 class CategoriesResponse(BaseModel):
     categories: list[str]
+
+
+class IngestResultResponse(BaseModel):
+    fetched: int
+    stored: int
+    duplicates: int

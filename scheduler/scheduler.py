@@ -37,6 +37,7 @@ def create_scheduler() -> BackgroundScheduler:
         replace_existing=True,
         max_instances=1,
         coalesce=True,
+        misfire_grace_time=3600,
     )
     scheduler.add_job(
         _daily_job,
@@ -58,6 +59,9 @@ def create_scheduler() -> BackgroundScheduler:
             replace_existing=True,
             max_instances=1,
             coalesce=True,
+            # Generous grace so a slow boot doesn't cause the one-shot job to be
+            # skipped as a misfire (default grace is 1s).
+            misfire_grace_time=3600,
         )
     return scheduler
 
