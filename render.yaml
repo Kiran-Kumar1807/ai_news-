@@ -42,6 +42,8 @@ services:
         sync: false
       - key: GEMINI_MODEL
         value: gemini-flash-lite-latest
+      - key: GEMINI_MAX_RPM
+        value: "12"
       - key: ENABLE_SCHEDULER
         value: "true"
       - key: ENVIRONMENT
