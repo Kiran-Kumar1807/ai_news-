@@ -44,7 +44,11 @@ class Settings(BaseSettings):
     # Run one ingestion pass shortly after startup so a fresh deploy has content
     # without waiting a full interval for the first scheduled run.
     ingest_on_startup: bool = True
-    max_articles_per_feed: int = 20
+    # Kept modest so a full pass finishes quickly within free-tier Gemini limits.
+    max_articles_per_feed: int = 8
+
+    # Token required to call the manual ingestion trigger. Empty disables it.
+    admin_token: str = ""
 
     # Digest email
     digest_hour: int = 7

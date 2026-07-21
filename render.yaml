@@ -35,6 +35,9 @@ services:
           property: connectionString
       - key: JWT_SECRET_KEY
         generateValue: true
+      # Authorizes POST /admin/ingest (manual ingestion trigger).
+      - key: ADMIN_TOKEN
+        generateValue: true
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL

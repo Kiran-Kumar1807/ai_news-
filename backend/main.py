@@ -6,7 +6,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.api.routes import articles, auth, categories, feed, health, profile
+from backend.api.routes import (
+    admin,
+    articles,
+    auth,
+    categories,
+    feed,
+    health,
+    profile,
+)
 from backend.config import settings
 from backend.database.base import Base, engine
 from backend.database.session import session_scope
@@ -72,6 +80,7 @@ def create_app() -> FastAPI:
     app.include_router(feed.router)
     app.include_router(articles.router)
     app.include_router(categories.router)
+    app.include_router(admin.router)
 
     @app.get("/", tags=["root"])
     def root() -> dict:
