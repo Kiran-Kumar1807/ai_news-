@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     # gemini-flash-lite-latest is available on the Gemini free tier; set
     # GEMINI_MODEL to a heavier model (e.g. gemini-2.5-pro) when on a paid plan.
     gemini_model: str = "gemini-flash-lite-latest"
+    # Client-side rate limiting to stay under free-tier quotas (default 15 rpm).
+    gemini_max_rpm: int = 12
+    # Retries on 429/rate-limit responses before falling back to heuristics.
+    gemini_max_retries: int = 2
 
     # Ingestion / scheduler
     ingest_interval_minutes: int = 60
