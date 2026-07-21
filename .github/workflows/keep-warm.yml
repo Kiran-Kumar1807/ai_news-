@@ -1,0 +1,27 @@
+name: Keep backend warm
+
+# Pings the Render backend health endpoint on a schedule so the free-tier
+# service doesn't spin down (which would stop the hourly ingestion job and
+# cause slow cold starts). Override the URL with a repo variable BACKEND_URL.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *" # every ~10 minutes
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    name: Ping /health
+    runs-on: ubuntu-latest
+    steps:
+      - name: Curl health endpoint
+        run: |
+          BASE="${{ vars.BACKEND_URL || 'https://ai-news-backend-wgjh.onrender.com' }}"
+          echo "Pinging $BASE/health"
+          code=$(curl -s -m 90 -o /tmp/health.json -w "%{http_code}" "$BASE/health" || echo "000")
+          echo "HTTP $code"
+          cat /tmp/health.json || true
+          echo
+          if [ "$code" != "200" ]; then
+            echo "::warning::Health check returned $code"
+          fi
